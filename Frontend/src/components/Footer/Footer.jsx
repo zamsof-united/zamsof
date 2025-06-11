@@ -87,7 +87,7 @@ const Footer = () => {
 
       {/* Footer Bottom Section */}
       <div className="footer-bottom">
-        <p>&copy; 2024 ZAMSOF. All Rights Reserved.</p>
+        <p>&copy; 2025 ZAMSOF. All Rights Reserved. Made with Love by IQApex Labs. </p>
         <div className="social-links">
           <a
             href="https://web.facebook.com/profile.php?id=100064324136828"
