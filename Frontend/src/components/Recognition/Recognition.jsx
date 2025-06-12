@@ -11,6 +11,7 @@ import img4 from '../../assets/img4.png';
 import img5 from '../../assets/img5.png';
 import img6 from '../../assets/img6.jpeg';
 import img8 from '../../assets/img8.jpg';
+import img9 from '../../assets/img8.jpg';
 import './Recognition.css'; // Import the provided CSS file
 
 // Configure Swiper to use modules
