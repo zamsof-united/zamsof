@@ -11,6 +11,9 @@ import Project from "./components/Projects/Project.jsx";
 import Admin from "./Admin/Admin.jsx";
 import Newss from "./Pages/News.jsx";
 import Gallery from "./Pages/Gallery.jsx";
+import JobNewsPage from "./Pages/JobNewsPage.jsx"; // <-- New page import
+
+
 
 const router = createBrowserRouter([
   {
@@ -48,6 +51,10 @@ const router = createBrowserRouter([
       {
         path: "/admin-page",
         element: <Admin />,
+      },
+      {
+        path: "/jobs",                  // <-- New route
+        element: <JobNewsPage />,       // <-- Render Job & News Page
       },
       {
         path: "*",

@@ -84,6 +84,13 @@ function Navbar() {
               Thematic <span className="uleffect"></span>
             </NavLink>
           </li>
+
+           {/* NEW: Jobs & News */}
+          <li>
+            <NavLink to="/jobs" className={({ isActive }) => isActive ? 'active' : ''}>
+              Jobs & News <span className="uleffect"></span>
+            </NavLink>
+          </li>
         </ul>
       </nav>
 

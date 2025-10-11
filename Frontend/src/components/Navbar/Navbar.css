@@ -175,3 +175,20 @@
     display: none;
   }
 }
+
+
+
+
+
+
+
+
+.nav-links .highlight a,
+.nav-links .highlight {
+  color: #007e6a !important; /* ZAMSOF green */
+  font-weight: 600;
+}
+
+.nav-links .highlight:hover {
+  color: #004c3f !important;
+}
