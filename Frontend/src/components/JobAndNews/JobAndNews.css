@@ -13,6 +13,8 @@
   color: #333;
   min-height: 100vh;
   box-sizing: border-box;
+  overflow-x: hidden; /* ✅ Prevents horizontal scrollbar */
+  width: 100%;
 }
 
 /* ===============================
@@ -24,7 +26,7 @@
   border-radius: 15px;
   width: 85%;
   max-width: 900px;
-  min-height: 600px; /* keeps both same height */
+  min-height: 600px;
   padding: 2.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -32,6 +34,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box; /* ✅ Ensures padding doesn’t overflow */
 }
 
 .job-posting:hover,
@@ -40,9 +43,6 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* ===============================
-   HEADINGS
-=============================== */
 /* ===============================
    HEADINGS
 =============================== */
@@ -55,9 +55,9 @@
   font-weight: 700;
   font-size: 1.9rem;
   margin-bottom: 1rem;
-  /* border-bottom: 3px solid #9d4f1e;  <-- removed underline */
   display: inline-block;
   padding-bottom: 0.4rem;
+  overflow-wrap: break-word;
 }
 
 .job-posting h3 {
@@ -105,6 +105,7 @@
   width: 80%;
   max-width: 600px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
 }
 
 .news-item:hover {
@@ -123,20 +124,25 @@
 }
 
 /* ===============================
-   NEWS IMAGES
+   NEWS IMAGES (UPDATED FOR FULL RESPONSIVENESS)
 =============================== */
 .news-images {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 15px;
-  margin-top: 1rem;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  width: 100%;
+  overflow-x: hidden; /* ✅ Avoids overflow */
 }
 
 .news-images img {
   width: 100%;
-  max-width: 250px;
-  border-radius: 10px;
+  max-width: 320px;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
@@ -172,7 +178,7 @@
   }
 
   .news-images img {
-    max-width: 200px;
+    max-width: 260px;
   }
 }
 
@@ -192,8 +198,12 @@
     width: 90%;
   }
 
+  .news-images {
+    gap: 0.8rem;
+  }
+
   .news-images img {
-    max-width: 180px;
+    max-width: 200px;
   }
 }
 
@@ -218,10 +228,12 @@
 
   .news-images {
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
   }
 
   .news-images img {
+    max-width: 100%;
     width: 100%;
+    aspect-ratio: 16 / 9;
   }
 }
