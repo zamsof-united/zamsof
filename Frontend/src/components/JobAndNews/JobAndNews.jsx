@@ -10,13 +10,13 @@ const JobAndNews = ({ newsImages }) => {
         <h3>WE ARE HIRING!</h3>
         <p><strong>Resource Mobilization Officers (RMOs) x 2</strong></p>
         <p>
-          Work Remotely or In-Person.<br/>
-          Lusaka, Zambia<br/>
+          Work Remotely or In-Person.<br />
+          Lusaka, Zambia<br />
           Reporting to: The National Coordinator
         </p>
         <p>
-          <strong>Duration:</strong> Flexible<br/>
-          <strong>Application Deadline:</strong> October 31, 2025<br/>
+          <strong>Duration:</strong> Flexible<br />
+          <strong>Application Deadline:</strong> October 31, 2025<br />
           <strong>Start Date:</strong> As soon as possible
         </p>
 
@@ -62,6 +62,13 @@ const JobAndNews = ({ newsImages }) => {
 
         <p>Contract is voluntary; remuneration may apply based on donor funding.</p>
       </div>
+      <a
+        href="mailto:zamsof.forum@gmail.com?subject=RMO Application"
+        className="apply-btn"
+      >
+        Apply Now
+      </a>
+
 
       {/* ===== NEWS / MEDIA ===== */}
       <div className="news-updates">
@@ -78,7 +85,7 @@ const JobAndNews = ({ newsImages }) => {
 
         <div className="news-images">
           {newsImages && newsImages.map((img, idx) => (
-            <img key={idx} src={img} alt={`ZAMSOF news ${idx+1}`} />
+            <img key={idx} src={img} alt={`ZAMSOF news ${idx + 1}`} />
           ))}
         </div>
       </div>
@@ -87,5 +94,4 @@ const JobAndNews = ({ newsImages }) => {
 };
 
 export default JobAndNews;
-
 

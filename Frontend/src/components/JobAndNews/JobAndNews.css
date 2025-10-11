@@ -237,3 +237,30 @@
     aspect-ratio: 16 / 9;
   }
 }
+
+
+
+.apply-btn {
+  display: inline-block;
+  padding: 0.75rem 1.8rem;           /* vertical & horizontal padding */
+  margin-top: 1.5rem;               /* spacing above button */
+  background-color: #D6A900;         /* ZAMSOF yellow */
+  color: #fff;                       /* white text */
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 8px;                /* rounded corners */
+  text-decoration: none;             /* remove underline */
+  transition: all 0.3s ease;         /* smooth hover effect */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* subtle shadow */
+}
+
+.apply-btn:hover {
+  background-color: #B88C00;         /* darker yellow on hover */
+  transform: translateY(-2px);       /* slight lift effect */
+  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+.apply-btn:active {
+  transform: translateY(0);          /* button press effect */
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
