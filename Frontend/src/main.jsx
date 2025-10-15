@@ -48,10 +48,7 @@ const router = createBrowserRouter([
         path: "/projects",
         element: <Project />,
       },
-      {
-        path: "/admin-page",
-        element: <Admin />,
-      },
+      { path: "admin", element: <Admin /> },    
       {
         path: "/jobs",                  // <-- New route
         element: <JobNewsPage />,       // <-- Render Job & News Page

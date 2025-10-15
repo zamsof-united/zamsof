@@ -1,91 +1,123 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./JobAndNews.css";
 
-const JobAndNews = ({ newsImages }) => {
+const JobAndNews = () => {
+  const [jobNews, setJobNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Backend URL
+  const API_BASE = import.meta.env.VITE_API_BASE || "https://zamsof.onrender.com/api";
+
+  useEffect(() => {
+    const fetchJobNews = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/jobnews`);
+        if (!res.ok) throw new Error("Failed to fetch job & news data");
+        const data = await res.json();
+        setJobNews(data);
+      } catch (err) {
+        console.error(err);
+        setError("Unable to load updates right now.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobNews();
+  }, [API_BASE]);
+
+  const jobs = jobNews.filter((item) => item.type === "job");
+  const news = jobNews.filter((item) => item.type === "news");
+
   return (
     <section className="job-news-section">
-      {/* ===== JOB POSTING ===== */}
-      <div className="job-posting">
-        <h2> Global South Opportunities</h2>
-        <h3>WE ARE HIRING!</h3>
-        <p><strong>Resource Mobilization Officers (RMOs) x 2</strong></p>
-        <p>
-          Work Remotely or In-Person.<br />
-          Lusaka, Zambia<br />
-          Reporting to: The National Coordinator
-        </p>
-        <p>
-          <strong>Duration:</strong> Flexible<br />
-          <strong>Application Deadline:</strong> October 31, 2025<br />
-          <strong>Start Date:</strong> As soon as possible
-        </p>
+      {loading && <p className="loading-text">Loading updates…</p>}
+      {error && <p className="error-text">{error}</p>}
 
-        <p>
-          ZAMSOF is looking for 2 Remote Resource Mobilization Officers to
-          support the organization’s fundraising, grants application, management,
-          and donor engagement efforts.
-        </p>
-
-        <h4>Required Qualifications</h4>
-        <ul>
-          <li>Bachelor/Master in Dev Studies, Intl Relations, Business Admin or related.</li>
-          <li>2-5 years experience in resource mobilization, grant writing, donor relations.</li>
-          <li>Clear, result-oriented proposal writing skills.</li>
-          <li>Strong organizational and interpersonal skills.</li>
-          <li>Microsoft Office knowledge; donor database experience is a plus.</li>
-        </ul>
-
-        <h4>Key Responsibilities</h4>
-        <ul>
-          <li>Proposal development and grant writing.</li>
-          <li>Fundraising strategies and pipeline management.</li>
-          <li>Donor engagements and administration.</li>
-          <li>Reporting and documentation.</li>
-        </ul>
-
-        <h4>Application Procedure</h4>
-        <p>
-          Submit your application via the link addressed to The National Coordinator:
-        </p>
-        <ul>
-          <li>Cover letter outlining interest and qualifications.</li>
-          <li>CV / Resume</li>
-        </ul>
-        <p>Send by October 31, 2025. Only shortlisted candidates will be contacted.</p>
-
-        <h4>Why Join ZAMSOF</h4>
-        <ul>
-          <li>Contribute to Zambia’s social movement and advocacy.</li>
-          <li>Lived experience learning about civil society in Global South.</li>
-          <li>Networking and coalition building opportunities.</li>
-        </ul>
-
-        <p>Contract is voluntary; remuneration may apply based on donor funding.</p>
-      </div>
-      <a
-        href="mailto:zamsof.forum@gmail.com?subject=RMO Application"
-        className="apply-btn"
-      >
-        Apply Now
-      </a>
-
-
-      {/* ===== NEWS / MEDIA ===== */}
-      <div className="news-updates">
-        <h2> News & Updates</h2>
-        <div className="news-item">
-          <h4>Ubuntu in Action</h4>
-          <p>
-            Media coverage:{" "}
-            <a href="https://the-global-forest-coalition.shorthandstories.com/ubuntu-in-action/index.html" target="_blank" rel="noopener noreferrer">
-              Read More
+      {/* ===== JOB POSTINGS ===== */}
+      {jobs.length > 0 ? (
+        jobs.map((job) => (
+          <article className="job-posting" key={job._id}>
+            <h2>{job.title}</h2>
+            {job.location && <p><strong>Location:</strong> {job.location}</p>}
+            {job.deadline && <p><strong>Deadline:</strong> {job.deadline}</p>}
+            <div
+              className="job-desc"
+              dangerouslySetInnerHTML={{ __html: job.description }}
+            />
+            <a
+              href={job.link || "mailto:zamsof.forum@gmail.com?subject=Application"}
+              className="apply-btn"
+            >
+              Apply Now
             </a>
-          </p>
-        </div>
 
-        <div className="news-images">
-          {newsImages && newsImages.map((img, idx) => (
-            <img key={idx} src={img} alt={`ZAMSOF news ${idx + 1}`} />
+            {/* Multiple Images for jobs */}
+            {job.images && job.images.length > 0 && (
+              <div className="job-images-container">
+                {job.images.map((img, i) => (
+                  <img
+                    key={i}
+                    src={`${API_BASE.replace("/api", "")}${img}`}
+                    alt={job.title}
+                    className="job-news-image"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                ))}
+              </div>
+            )}
+          </article>
+        ))
+      ) : (
+        !loading && <p className="no-jobs">No current job openings.</p>
+      )}
+
+      {/* ===== NEWS / UPDATES ===== */}
+      <div className="news-updates">
+        <h2>News & Updates</h2>
+        {news.length === 0 && !loading && <p className="no-news">No news at the moment.</p>}
+
+        <div className="news-grid">
+          {news.map((n) => (
+            <div className="news-card" key={n._id}>
+              <div className="news-content">
+                <h4>{n.title}</h4>
+                <div
+                  className="news-desc"
+                  dangerouslySetInnerHTML={{ __html: n.description }}
+                />
+                {n.link && (
+                  <p>
+                    <a
+                      href={n.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="news-link"
+                    >
+                      Read more
+                    </a>
+                  </p>
+                )}
+              </div>
+
+              {/* Card for multiple images */}
+              {n.images && n.images.length > 0 && (
+                <div className="news-images-card">
+                  {n.images.map((img, i) => (
+                    <img
+                      key={i}
+                      src={`${API_BASE.replace("/api", "")}${img}`}
+                      alt={n.title}
+                      className="news-image"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -94,4 +126,3 @@ const JobAndNews = ({ newsImages }) => {
 };
 
 export default JobAndNews;
-

@@ -1,0 +1,28 @@
+{
+  "job": {
+    "title": "Global South Opportunities",
+    "positions": "Resource Mobilization Officers (RMOs) × 2",
+    "location": "Work Remotely or In-Person, Lusaka, Zambia",
+    "deadline": "October 31, 2025",
+    "description": "ZAMSOF is seeking two dedicated and proactive Resource Mobilization Officers (RMOs) to join our team. The successful candidates will be responsible for identifying funding opportunities, building partnerships, and supporting proposal development for programs that strengthen youth leadership and sustainability in the Global South."
+  },
+  "news": [
+    {
+      "title": "Ubuntu in Action",
+      "link": "https://the-global-forest-coalition.shorthandstories.com/ubuntu-in-action/index.html"
+    },
+    {
+      "title": "Youth for Climate Action 2025",
+      "link": "https://www.unep.org/youth-for-climate-2025"
+    },
+    {
+      "title": "ZAMSOF Expands Collaboration with Global Partners",
+      "link": "https://zamsof.org/partnerships"
+    }
+  ],
+  "images": [
+    "/assets/news1.jpg",
+    "/assets/news2.jpg",
+    "/assets/news3.jpg"
+  ]
+}

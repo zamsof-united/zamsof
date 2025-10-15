@@ -1,95 +1,175 @@
 import { useState, useEffect } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import "./Admin.css";
+
+const BACKEND_URL = "http://localhost:5000"; // Update for production
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [endpoint, setEndpoint] = useState("donation");
-  const [activeLink, setActiveLink] = useState("donation");
-
-  // Capitalize Words Helper
-  const capitalizeWords = (str) =>
-    str
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-
-  // Fetch Data
-  useEffect(() => {
-    if (isAuthenticated) {
-      const fetchData = async () => {
-        try {
-          setError("");
-          const response = await fetch(
-            `https://zamsof.onrender.com/api/${endpoint}`
-          );
-          if (!response.ok) throw new Error("Failed to fetch data");
-
-          const result = await response.json();
-          setData(result);
-        } catch (err) {
-          console.error("Error fetching data:", err);
-          // setError("Unable to load data. Please try again later.");
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
-    }
-  }, [endpoint, isAuthenticated]);
-
-  // Handle Password Submit
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(
-        "https://zamsof.onrender.com/api/verify-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }),
-        }
-      );
-
-      const result = await response.json();
-      if (result.success) {
-        setIsAuthenticated(true);
-        setPasswordError("");
-      } else setPasswordError("Incorrect password. Please try again.");
-    } catch (err) {
-      console.error("Error verifying password:", err);
-      setPasswordError("Something went wrong. Please try again later.");
-    }
-  };
-
-  // Handle Delete
-  const handleDelete = async (id) => {
-    try {
-      const response = await fetch(
-        `https://zamsof.onrender.com/api/${endpoint}/${id}`,
-        { method: "DELETE" }
-      );
-
-      if (!response.ok) throw new Error("Failed to delete data");
-
-      setData(data.filter((item) => item._id !== id));
-    } catch (err) {
-      console.error("Error deleting data:", err);
-      alert("Failed to delete the item. Please try again.");
-    }
-  };
+  const [formError, setFormError] = useState("");
+  const [endpoint, setEndpoint] = useState("jobnews");
+  const [activeLink, setActiveLink] = useState("jobnews");
 
   const menuItems = [
+    { name: "Job & News", path: "jobnews" },
     { name: "Donation", path: "donation" },
     { name: "Volunteer", path: "volunteer" },
     { name: "Partner", path: "partner" },
     { name: "Contact Us", path: "contact" },
     { name: "Join Us", path: "joinus" },
   ];
+
+  const [formData, setFormData] = useState({
+    type: "job",
+    title: "",
+    description: "",
+    location: "",
+    deadline: "",
+    startDate: "",
+    contract: "",
+    qualifications: "",
+    responsibilities: "",
+    link: "",
+    images: [],
+  });
+
+  const capitalizeWords = (str) =>
+    str
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+  // Load token
+  useEffect(() => {
+    const savedToken = localStorage.getItem("adminToken");
+    if (savedToken) {
+      setToken(savedToken);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // Fetch data
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch data");
+        const result = await res.json();
+        setData(result);
+      } catch (err) {
+        console.error(err);
+        setError("Unable to fetch data from backend.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [endpoint, isAuthenticated, token]);
+
+  // Admin login
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/verify-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setToken(result.token);
+        localStorage.setItem("adminToken", result.token);
+        setIsAuthenticated(true);
+        setPasswordError("");
+      } else setPasswordError(result.message || "Incorrect password");
+    } catch (err) {
+      console.error(err);
+      setPasswordError("Could not connect to backend");
+    }
+  };
+
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    setToken("");
+    setIsAuthenticated(false);
+  };
+
+  // Delete item
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/${endpoint}/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      setData(data.filter((item) => item._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete item");
+    }
+  };
+
+  // Submit Job/News with multiple images
+  const handleSubmitJobNews = async (e) => {
+    e.preventDefault();
+    setFormError("");
+
+    try {
+      const form = new FormData();
+      Object.keys(formData).forEach((key) => {
+        if (key === "images") {
+          formData.images.forEach((img) => form.append("images", img)); // matches backend
+        } else {
+          form.append(key, formData[key]);
+        }
+      });
+
+      const res = await fetch(`${BACKEND_URL}/api/jobnews`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }, // no Content-Type
+        body: form,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error("Unexpected response: " + text);
+      }
+
+      const result = await res.json();
+      setData([result, ...data]);
+      setFormData({
+        type: "job",
+        title: "",
+        description: "",
+        location: "",
+        deadline: "",
+        startDate: "",
+        contract: "",
+        qualifications: "",
+        responsibilities: "",
+        link: "",
+        images: [],
+      });
+
+      alert("Successfully added!");
+    } catch (err) {
+      console.error(err);
+      setFormError(err.message);
+    }
+  };
 
   return (
     <div className="admin-container">
@@ -105,7 +185,7 @@ const Admin = () => {
               className="password-input"
             />
             <button type="submit" className="password-submit-btn">
-              Submit
+              Login
             </button>
             {passwordError && <p className="error-message">{passwordError}</p>}
           </form>
@@ -113,18 +193,18 @@ const Admin = () => {
       ) : (
         <>
           <aside className="sidebar">
-            <h2 className="sidebar-header">Admin Panel</h2>
+            <h2>Admin Panel</h2>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
             <nav>
-              {menuItems.map((item, index) => (
+              {menuItems.map((item, idx) => (
                 <button
-                  key={index}
-                  className={`sidebar-link ${
-                    activeLink === item.path ? "active" : ""
-                  }`}
+                  key={idx}
+                  className={`sidebar-link ${activeLink === item.path ? "active" : ""}`}
                   onClick={() => {
                     setEndpoint(item.path);
                     setActiveLink(item.path);
-                    setLoading(true);
                   }}
                 >
                   {item.name}
@@ -134,47 +214,113 @@ const Admin = () => {
           </aside>
 
           <main className="admin-main">
-            <h2>{capitalizeWords(endpoint)} Data</h2>
+            <h2>{capitalizeWords(endpoint)} Management</h2>
+
+            {endpoint === "jobnews" && (
+              <div className="form-container">
+                <h3>Add Job or News</h3>
+                <form onSubmit={handleSubmitJobNews} className="add-form">
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  >
+                    <option value="job">Job</option>
+                    <option value="news">News</option>
+                  </select>
+
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Location (optional)"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Deadline (optional)"
+                    value={formData.deadline}
+                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Start Date (optional)"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Contract Info (optional)"
+                    value={formData.contract}
+                    onChange={(e) => setFormData({ ...formData, contract: e.target.value })}
+                  />
+
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.description}
+                    onChange={(value) => setFormData({ ...formData, description: value })}
+                    placeholder="Description"
+                  />
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.qualifications}
+                    onChange={(value) => setFormData({ ...formData, qualifications: value })}
+                    placeholder="Qualifications (HTML list)"
+                  />
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.responsibilities}
+                    onChange={(value) => setFormData({ ...formData, responsibilities: value })}
+                    placeholder="Responsibilities (HTML list)"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Application / Read More Link"
+                    value={formData.link}
+                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  />
+
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) =>
+                      setFormData({ ...formData, images: Array.from(e.target.files) })
+                    }
+                  />
+
+                  <button type="submit" className="submit-btn">
+                    Add {formData.type === "job" ? "Job" : "News"}
+                  </button>
+                  {formError && <p className="error-message">{formError}</p>}
+                </form>
+              </div>
+            )}
+
             {error && <p className="error-message">{error}</p>}
             {loading ? (
-              <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <p className="loading-text">Loading...</p>
-            </div>
-            
-            ) : data.length > 0 ? (
+              <p>Loading...</p>
+            ) : (
               <div className="data-container">
                 {data.map((item) => (
                   <div key={item._id} className="data-card">
-                    <div className="data-content">
-                      {Object.keys(item)
-                        .filter((key) => key !== "_id" && key !== "__v")
-                        .map((key) => (
-                          <div key={key} className="data-item">
-                            <strong>{capitalizeWords(key)}:</strong> {item[key]}
-                          </div>
-                        ))}
-                    </div>
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(item._id)}
-                    >
-                      X
+                    <h4>{item.title}</h4>
+                    <p>Type: {item.type}</p>
+                    <p>Location: {item.location}</p>
+                    <p>Deadline: {item.deadline}</p>
+                    <p>Link: {item.link}</p>
+                    <button onClick={() => handleDelete(item._id)} className="delete-btn">
+                      Delete
                     </button>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="no-data-container">
-  <div className="no-data-card">
-    <h3 className="no-data-title">No Data Available</h3>
-    <p className="no-data-message">
-      We could not find any {capitalizeWords(endpoint)} data at the moment.
-    </p>
-    <p className="no-data-hint">Please check back later or add new entries.</p>
-  </div>
-</div>
-
             )}
           </main>
         </>
@@ -184,3 +330,10 @@ const Admin = () => {
 };
 
 export default Admin;
+
+
+
+
+
+
+
