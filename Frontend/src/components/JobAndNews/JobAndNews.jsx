@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./JobAndNews.css";
 
+const API_BASE = "https://zamsof.onrender.com/api";
+
 const JobAndNews = () => {
   const [jobNews, setJobNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Backend URL
-  const API_BASE = import.meta.env.VITE_API_BASE || "https://zamsof.onrender.com/api";
-
-
 
   useEffect(() => {
     const fetchJobNews = async () => {
@@ -26,8 +23,9 @@ const JobAndNews = () => {
         setLoading(false);
       }
     };
+
     fetchJobNews();
-  }, [API_BASE]);
+  }, []);
 
   const jobs = jobNews.filter((item) => item.type === "job");
   const news = jobNews.filter((item) => item.type === "news");
@@ -55,7 +53,7 @@ const JobAndNews = () => {
               Apply Now
             </a>
 
-            {/* Multiple Images for jobs */}
+            {/* Job Images */}
             {job.images && job.images.length > 0 && (
               <div className="job-images-container">
                 {job.images.map((img, i) => (
@@ -103,7 +101,7 @@ const JobAndNews = () => {
                 )}
               </div>
 
-              {/* Card for multiple images */}
+              {/* News Images */}
               {n.images && n.images.length > 0 && (
                 <div className="news-images-card">
                   {n.images.map((img, i) => (
@@ -112,9 +110,7 @@ const JobAndNews = () => {
                       src={`${API_BASE.replace("/api", "")}${img}`}
                       alt={n.title}
                       className="news-image"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
+                      onError={(e) => { e.target.style.display = "none"; }}
                     />
                   ))}
                 </div>

@@ -1,13 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./Admin.css";
 
-//const BACKEND_URL = "http://localhost:5000"; // Update for production
-//const BACKEND_URL = "https://zamsof.onrender.com"; // ✅ correct for production
-const API_BASE = import.meta.env.VITE_API_BASE || "https://zamsof.onrender.com/api";
-
-
+const API_BASE = "https://zamsof.onrender.com/api";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,12 +41,9 @@ const Admin = () => {
   });
 
   const capitalizeWords = (str) =>
-    str
-      .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
+    str.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
-  // Load token
+  // Load token from localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
@@ -59,14 +52,15 @@ const Admin = () => {
     }
   }, []);
 
-  // Fetch data
+  // Fetch data for selected endpoint
   useEffect(() => {
     if (!isAuthenticated) return;
+
     const fetchData = async () => {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+        const res = await fetch(`${API_BASE}/${endpoint}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -79,6 +73,7 @@ const Admin = () => {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [endpoint, isAuthenticated, token]);
 
@@ -86,12 +81,14 @@ const Admin = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${BACKEND_URL}/api/verify-password`, {
+      console.log("Logging in with password:", password);
+      const res = await fetch(`${API_BASE}/verify-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
       const result = await res.json();
+      console.log("Login result:", result);
       if (result.success) {
         setToken(result.token);
         localStorage.setItem("adminToken", result.token);
@@ -114,7 +111,7 @@ const Admin = () => {
   // Delete item
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/${endpoint}/${id}`, {
+      const res = await fetch(`${API_BASE}/${endpoint}/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -135,15 +132,15 @@ const Admin = () => {
       const form = new FormData();
       Object.keys(formData).forEach((key) => {
         if (key === "images") {
-          formData.images.forEach((img) => form.append("images", img)); // matches backend
+          formData.images.forEach((img) => form.append("images", img));
         } else {
           form.append(key, formData[key]);
         }
       });
 
-      const res = await fetch(`${BACKEND_URL}/api/jobnews`, {
+      const res = await fetch(`${API_BASE}/jobnews`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` }, // no Content-Type
+        headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
 
@@ -334,10 +331,3 @@ const Admin = () => {
 };
 
 export default Admin;
-
-
-
-
-
-
-
