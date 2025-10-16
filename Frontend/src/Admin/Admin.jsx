@@ -3,7 +3,6 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./Admin.css";
 
-// Dynamic API Base
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000/api"
@@ -20,6 +19,8 @@ const Admin = () => {
   const [formError, setFormError] = useState("");
   const [endpoint, setEndpoint] = useState("jobnews");
   const [activeLink, setActiveLink] = useState("jobnews");
+
+  const [editingItem, setEditingItem] = useState(null); // ✨ ADDED for edit mode
 
   const menuItems = [
     { name: "Job & News", path: "jobnews" },
@@ -45,9 +46,11 @@ const Admin = () => {
   });
 
   const capitalizeWords = (str) =>
-    str.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    str
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
 
-  // Load token from localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
@@ -56,10 +59,8 @@ const Admin = () => {
     }
   }, []);
 
-  // Fetch data
   useEffect(() => {
     if (!isAuthenticated) return;
-
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -77,11 +78,9 @@ const Admin = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [endpoint, isAuthenticated, token]);
 
-  // Admin login
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -103,14 +102,12 @@ const Admin = () => {
     }
   };
 
-  // Logout
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     setToken("");
     setIsAuthenticated(false);
   };
 
-  // Delete item
   const handleDelete = async (id) => {
     try {
       const res = await fetch(`${API_BASE}/${endpoint}/${id}`, {
@@ -125,7 +122,6 @@ const Admin = () => {
     }
   };
 
-  // Submit Job/News
   const handleSubmitJobNews = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -140,16 +136,32 @@ const Admin = () => {
         }
       });
 
-      const res = await fetch(`${API_BASE}/jobnews`, {
-        method: "POST",
+      const url = editingItem
+        ? `${API_BASE}/jobnews/${editingItem._id}` // ✨ if editing, PUT
+        : `${API_BASE}/jobnews`;
+
+      const method = editingItem ? "PUT" : "POST"; // ✨ update or create
+
+      const res = await fetch(url, {
+        method,
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
 
       if (!res.ok) throw new Error(await res.text());
-
       const result = await res.json();
-      setData([result, ...data]);
+
+      if (editingItem) {
+        // ✨ Replace old item in list
+        setData(data.map((item) => (item._id === result._id ? result : item)));
+        setEditingItem(null);
+        alert("Successfully updated!");
+      } else {
+        setData([result, ...data]);
+        alert("Successfully added!");
+      }
+
+      // reset form
       setFormData({
         type: "job",
         title: "",
@@ -163,12 +175,29 @@ const Admin = () => {
         link: "",
         images: [],
       });
-
-      alert("Successfully added!");
     } catch (err) {
       console.error(err);
       setFormError(err.message);
     }
+  };
+
+  const handleEdit = (item) => {
+    // ✨ Fill form with existing item data
+    setFormData({
+      type: item.type,
+      title: item.title || "",
+      description: item.description || "",
+      location: item.location || "",
+      deadline: item.deadline || "",
+      startDate: item.startDate || "",
+      contract: item.contract || "",
+      qualifications: item.qualifications || "",
+      responsibilities: item.responsibilities || "",
+      link: item.link || "",
+      images: [],
+    });
+    setEditingItem(item);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -184,7 +213,9 @@ const Admin = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="password-input"
             />
-            <button type="submit" className="password-submit-btn">Login</button>
+            <button type="submit" className="password-submit-btn">
+              Login
+            </button>
             {passwordError && <p className="error-message">{passwordError}</p>}
           </form>
         </div>
@@ -192,13 +223,21 @@ const Admin = () => {
         <>
           <aside className="sidebar">
             <h2>Admin Panel</h2>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
             <nav>
               {menuItems.map((item, idx) => (
                 <button
                   key={idx}
-                  className={`sidebar-link ${activeLink === item.path ? "active" : ""}`}
-                  onClick={() => { setEndpoint(item.path); setActiveLink(item.path); }}
+                  className={`sidebar-link ${
+                    activeLink === item.path ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setEndpoint(item.path);
+                    setActiveLink(item.path);
+                    setEditingItem(null); // reset edit mode when switching
+                  }}
                 >
                   {item.name}
                 </button>
@@ -208,35 +247,196 @@ const Admin = () => {
 
           <main className="admin-main">
             <h2>{capitalizeWords(endpoint)} Management</h2>
-            {/* Job/News Form */}
+
             {endpoint === "jobnews" && (
               <div className="form-container">
-                <h3>Add Job or News</h3>
+                <h3>{editingItem ? "Edit Job/News" : "Add Job or News"}</h3>
+
                 <form onSubmit={handleSubmitJobNews} className="add-form">
-                  <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
+                  <select
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                  >
                     <option value="job">Job</option>
                     <option value="news">News</option>
                   </select>
-                  <input type="text" placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-                  <input type="text" placeholder="Location (optional)" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-                  <input type="text" placeholder="Deadline (optional)" value={formData.deadline} onChange={(e) => setFormData({ ...formData, deadline: e.target.value })} />
-                  <input type="text" placeholder="Start Date (optional)" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
-                  <input type="text" placeholder="Contract Info (optional)" value={formData.contract} onChange={(e) => setFormData({ ...formData, contract: e.target.value })} />
 
-                  <ReactQuill theme="snow" value={formData.description} onChange={(value) => setFormData({ ...formData, description: value })} placeholder="Description" />
-                  <ReactQuill theme="snow" value={formData.qualifications} onChange={(value) => setFormData({ ...formData, qualifications: value })} placeholder="Qualifications (HTML list)" />
-                  <ReactQuill theme="snow" value={formData.responsibilities} onChange={(value) => setFormData({ ...formData, responsibilities: value })} placeholder="Responsibilities (HTML list)" />
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    required
+                  />
 
-                  <input type="text" placeholder="Application / Read More Link" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
-                  <input type="file" multiple accept="image/*" onChange={(e) => setFormData({ ...formData, images: Array.from(e.target.files) })} />
-                  <button type="submit" className="submit-btn">Add {formData.type}</button>
+                  {/* JOB FORM */}
+                  {formData.type === "job" && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Location"
+                        value={formData.location}
+                        onChange={(e) =>
+                          setFormData({ ...formData, location: e.target.value })
+                        }
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Deadline"
+                        value={formData.deadline}
+                        onChange={(e) =>
+                          setFormData({ ...formData, deadline: e.target.value })
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Start Date"
+                        value={formData.startDate}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            startDate: e.target.value,
+                          })
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Contract Terms (optional)"
+                        value={formData.contract}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            contract: e.target.value,
+                          })
+                        }
+                      />
+
+                      <ReactQuill
+                        theme="snow"
+                        value={formData.description}
+                        onChange={(value) =>
+                          setFormData({ ...formData, description: value })
+                        }
+                        placeholder="Full Job Description"
+                      />
+                      <ReactQuill
+                        theme="snow"
+                        value={formData.qualifications}
+                        onChange={(value) =>
+                          setFormData({ ...formData, qualifications: value })
+                        }
+                        placeholder="Required Qualifications"
+                      />
+                      <ReactQuill
+                        theme="snow"
+                        value={formData.responsibilities}
+                        onChange={(value) =>
+                          setFormData({ ...formData, responsibilities: value })
+                        }
+                        placeholder="Key Responsibilities"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Application / Email Link"
+                        value={formData.link}
+                        onChange={(e) =>
+                          setFormData({ ...formData, link: e.target.value })
+                        }
+                      />
+                      <label style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        Upload Job Images (optional)
+                      </label>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            images: Array.from(e.target.files),
+                          })
+                        }
+                      />
+                    </>
+                  )}
+
+                  {/* NEWS FORM */}
+                  {formData.type === "news" && (
+                    <>
+                      <ReactQuill
+                        theme="snow"
+                        value={formData.description}
+                        onChange={(value) =>
+                          setFormData({ ...formData, description: value })
+                        }
+                        placeholder="News Content"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Read More / External Link"
+                        value={formData.link}
+                        onChange={(e) =>
+                          setFormData({ ...formData, link: e.target.value })
+                        }
+                      />
+                      <label style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        Upload Multiple Images (for News)
+                      </label>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            images: Array.from(e.target.files),
+                          })
+                        }
+                      />
+                    </>
+                  )}
+
+                  <button type="submit" className="submit-btn">
+                    {editingItem ? "Update" : "Add"} {formData.type}
+                  </button>
+                  {editingItem && (
+                    <button
+                      type="button"
+                      className="cancel-btn"
+                      onClick={() => {
+                        setEditingItem(null);
+                        setFormData({
+                          type: "job",
+                          title: "",
+                          description: "",
+                          location: "",
+                          deadline: "",
+                          startDate: "",
+                          contract: "",
+                          qualifications: "",
+                          responsibilities: "",
+                          link: "",
+                          images: [],
+                        });
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  )}
                   {formError && <p className="error-message">{formError}</p>}
                 </form>
               </div>
             )}
 
             {error && <p className="error-message">{error}</p>}
-            {loading ? <p>Loading...</p> : (
+            {loading ? (
+              <p>Loading...</p>
+            ) : (
               <div className="data-container">
                 {data.map((item) => (
                   <div key={item._id} className="data-card">
@@ -245,7 +445,20 @@ const Admin = () => {
                     <p>Location: {item.location}</p>
                     <p>Deadline: {item.deadline}</p>
                     <p>Link: {item.link}</p>
-                    <button onClick={() => handleDelete(item._id)} className="delete-btn">Delete</button>
+                    <div className="btn-group">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="edit-btn"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="delete-btn"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
