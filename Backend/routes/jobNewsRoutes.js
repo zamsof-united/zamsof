@@ -4,7 +4,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Setup storage for images
+// ======================
+// Multer storage for images
+// ======================
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = "uploads/jobnews";
@@ -18,15 +20,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// In-memory "DB" example (replace with MongoDB in production)
+// ======================
+// In-memory DB
+// ======================
 let jobNewsDB = [];
 
-// GET all
+// ======================
+// GET all job/news
+// ======================
 router.get("/", (req, res) => {
   res.json(jobNewsDB);
 });
 
-// POST new job/news with multiple images
+// ======================
+// POST new job/news
+// ======================
 router.post("/", upload.array("images"), (req, res) => {
   const {
     type,
@@ -62,7 +70,54 @@ router.post("/", upload.array("images"), (req, res) => {
   res.json(newItem);
 });
 
-// DELETE
+// ======================
+// PUT /:id - Edit existing job/news
+// ======================
+router.put("/:id", upload.array("images"), (req, res) => {
+  const { id } = req.params;
+  const index = jobNewsDB.findIndex((item) => item._id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ message: "Item not found" });
+  }
+
+  const {
+    type,
+    title,
+    description,
+    location,
+    deadline,
+    startDate,
+    contract,
+    qualifications,
+    responsibilities,
+    link,
+  } = req.body;
+
+  // Update the item
+  jobNewsDB[index] = {
+    ...jobNewsDB[index],
+    type,
+    title,
+    description,
+    location,
+    deadline,
+    startDate,
+    contract,
+    qualifications,
+    responsibilities,
+    link,
+    images: req.files.length
+      ? req.files.map((file) => "/" + file.path)
+      : jobNewsDB[index].images, // keep old images if none uploaded
+  };
+
+  res.json(jobNewsDB[index]);
+});
+
+// ======================
+// DELETE job/news
+// ======================
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
   jobNewsDB = jobNewsDB.filter((item) => item._id !== id);
