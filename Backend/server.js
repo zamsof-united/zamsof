@@ -18,9 +18,29 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // -------------------------
+// CORS Configuration (Updated)
+// -------------------------
+const allowedOrigins = [
+  "http://localhost:5173",   // Local development
+  "https://zamsof.org",      // Production frontend
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("❌ CORS blocked request from:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
+
+// -------------------------
 // Middleware
 // -------------------------
-app.use(cors({ origin: ["http://localhost:5173", "https://zamsof.org"], credentials: true }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -45,10 +65,12 @@ const hashedPassword = bcrypt.hashSync(process.env.SET_PASSWORD, 10);
 
 app.post("/api/verify-password", (req, res) => {
   const { password } = req.body;
-  if (!password) return res.status(400).json({ success: false, message: "Password required" });
+  if (!password)
+    return res.status(400).json({ success: false, message: "Password required" });
 
   const isMatch = bcrypt.compareSync(password, hashedPassword);
-  if (!isMatch) return res.json({ success: false, message: "Incorrect password" });
+  if (!isMatch)
+    return res.json({ success: false, message: "Incorrect password" });
 
   const token = jwt.sign({ admin: true }, process.env.JWT_SECRET, { expiresIn: "1d" });
   res.json({ success: true, token });
@@ -64,7 +86,7 @@ app.get("/", (req, res) => res.send("Backend is working!"));
 // -------------------------
 connectDB()
   .then(() => {
-    console.log("MongoDB connected");
-    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+    console.log("✅ MongoDB connected");
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
-  .catch((err) => console.error("MongoDB connection failed:", err));
+  .catch((err) => console.error("❌ MongoDB connection failed:", err));
