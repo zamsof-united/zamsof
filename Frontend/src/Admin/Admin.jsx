@@ -3,7 +3,13 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./Admin.css";
 
-const BACKEND_URL = "http://localhost:5000"; // Update for production
+//const BACKEND_URL = "http://localhost:5000"; // Update for production
+//const BACKEND_URL = "https://zamsof.onrender.com"; // ✅ correct for production
+const BACKEND_URL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:5000"
+    : "https://zamsof.onrender.com";
+
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

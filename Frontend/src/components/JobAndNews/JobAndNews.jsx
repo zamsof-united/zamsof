@@ -7,7 +7,12 @@ const JobAndNews = () => {
   const [error, setError] = useState("");
 
   // Backend URL
-  const API_BASE = import.meta.env.VITE_API_BASE || "https://zamsof.onrender.com/api";
+  // ✅ Use dynamic base URL
+const API_BASE =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:5000/api"
+    : "https://zamsof.onrender.com/api";
+
 
   useEffect(() => {
     const fetchJobNews = async () => {
