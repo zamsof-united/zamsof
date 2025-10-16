@@ -5,10 +5,8 @@ import "./Admin.css";
 
 //const BACKEND_URL = "http://localhost:5000"; // Update for production
 //const BACKEND_URL = "https://zamsof.onrender.com"; // ✅ correct for production
-const BACKEND_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:5000"
-    : "https://zamsof.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://zamsof.onrender.com/api";
+
 
 
 const Admin = () => {
