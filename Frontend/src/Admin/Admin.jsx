@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./Admin.css";
 
-const API_BASE = "https://zamsof.onrender.com/api";
+// Dynamic API Base
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://zamsof.onrender.com/api";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -52,7 +56,7 @@ const Admin = () => {
     }
   }, []);
 
-  // Fetch data for selected endpoint
+  // Fetch data
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -81,14 +85,12 @@ const Admin = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("Logging in with password:", password);
       const res = await fetch(`${API_BASE}/verify-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
       const result = await res.json();
-      console.log("Login result:", result);
       if (result.success) {
         setToken(result.token);
         localStorage.setItem("adminToken", result.token);
@@ -119,11 +121,11 @@ const Admin = () => {
       setData(data.filter((item) => item._id !== id));
     } catch (err) {
       console.error(err);
-      alert("Failed to delete item");
+      alert("Failed to delete item. Make sure backend is running and reachable.");
     }
   };
 
-  // Submit Job/News with multiple images
+  // Submit Job/News
   const handleSubmitJobNews = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -144,10 +146,7 @@ const Admin = () => {
         body: form,
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error("Unexpected response: " + text);
-      }
+      if (!res.ok) throw new Error(await res.text());
 
       const result = await res.json();
       setData([result, ...data]);
@@ -185,9 +184,7 @@ const Admin = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="password-input"
             />
-            <button type="submit" className="password-submit-btn">
-              Login
-            </button>
+            <button type="submit" className="password-submit-btn">Login</button>
             {passwordError && <p className="error-message">{passwordError}</p>}
           </form>
         </div>
@@ -195,18 +192,13 @@ const Admin = () => {
         <>
           <aside className="sidebar">
             <h2>Admin Panel</h2>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
+            <button onClick={handleLogout} className="logout-btn">Logout</button>
             <nav>
               {menuItems.map((item, idx) => (
                 <button
                   key={idx}
                   className={`sidebar-link ${activeLink === item.path ? "active" : ""}`}
-                  onClick={() => {
-                    setEndpoint(item.path);
-                    setActiveLink(item.path);
-                  }}
+                  onClick={() => { setEndpoint(item.path); setActiveLink(item.path); }}
                 >
                   {item.name}
                 </button>
@@ -216,98 +208,35 @@ const Admin = () => {
 
           <main className="admin-main">
             <h2>{capitalizeWords(endpoint)} Management</h2>
-
+            {/* Job/News Form */}
             {endpoint === "jobnews" && (
               <div className="form-container">
                 <h3>Add Job or News</h3>
                 <form onSubmit={handleSubmitJobNews} className="add-form">
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  >
+                  <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
                     <option value="job">Job</option>
                     <option value="news">News</option>
                   </select>
+                  <input type="text" placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+                  <input type="text" placeholder="Location (optional)" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                  <input type="text" placeholder="Deadline (optional)" value={formData.deadline} onChange={(e) => setFormData({ ...formData, deadline: e.target.value })} />
+                  <input type="text" placeholder="Start Date (optional)" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
+                  <input type="text" placeholder="Contract Info (optional)" value={formData.contract} onChange={(e) => setFormData({ ...formData, contract: e.target.value })} />
 
-                  <input
-                    type="text"
-                    placeholder="Title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Location (optional)"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Deadline (optional)"
-                    value={formData.deadline}
-                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Start Date (optional)"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Contract Info (optional)"
-                    value={formData.contract}
-                    onChange={(e) => setFormData({ ...formData, contract: e.target.value })}
-                  />
+                  <ReactQuill theme="snow" value={formData.description} onChange={(value) => setFormData({ ...formData, description: value })} placeholder="Description" />
+                  <ReactQuill theme="snow" value={formData.qualifications} onChange={(value) => setFormData({ ...formData, qualifications: value })} placeholder="Qualifications (HTML list)" />
+                  <ReactQuill theme="snow" value={formData.responsibilities} onChange={(value) => setFormData({ ...formData, responsibilities: value })} placeholder="Responsibilities (HTML list)" />
 
-                  <ReactQuill
-                    theme="snow"
-                    value={formData.description}
-                    onChange={(value) => setFormData({ ...formData, description: value })}
-                    placeholder="Description"
-                  />
-                  <ReactQuill
-                    theme="snow"
-                    value={formData.qualifications}
-                    onChange={(value) => setFormData({ ...formData, qualifications: value })}
-                    placeholder="Qualifications (HTML list)"
-                  />
-                  <ReactQuill
-                    theme="snow"
-                    value={formData.responsibilities}
-                    onChange={(value) => setFormData({ ...formData, responsibilities: value })}
-                    placeholder="Responsibilities (HTML list)"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Application / Read More Link"
-                    value={formData.link}
-                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  />
-
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) =>
-                      setFormData({ ...formData, images: Array.from(e.target.files) })
-                    }
-                  />
-
-                  <button type="submit" className="submit-btn">
-                    Add {formData.type === "job" ? "Job" : "News"}
-                  </button>
+                  <input type="text" placeholder="Application / Read More Link" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+                  <input type="file" multiple accept="image/*" onChange={(e) => setFormData({ ...formData, images: Array.from(e.target.files) })} />
+                  <button type="submit" className="submit-btn">Add {formData.type}</button>
                   {formError && <p className="error-message">{formError}</p>}
                 </form>
               </div>
             )}
 
             {error && <p className="error-message">{error}</p>}
-            {loading ? (
-              <p>Loading...</p>
-            ) : (
+            {loading ? <p>Loading...</p> : (
               <div className="data-container">
                 {data.map((item) => (
                   <div key={item._id} className="data-card">
@@ -316,9 +245,7 @@ const Admin = () => {
                     <p>Location: {item.location}</p>
                     <p>Deadline: {item.deadline}</p>
                     <p>Link: {item.link}</p>
-                    <button onClick={() => handleDelete(item._id)} className="delete-btn">
-                      Delete
-                    </button>
+                    <button onClick={() => handleDelete(item._id)} className="delete-btn">Delete</button>
                   </div>
                 ))}
               </div>
