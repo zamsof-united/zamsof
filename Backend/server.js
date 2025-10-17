@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const connectDB = require("./config/db"); // your MongoDB connection function
-const bcrypt = require("bcrypt"); // optional here, we will use plain password
 const jwt = require("jsonwebtoken");
+const connectDB = require("./config/db"); // MongoDB connection
 
 // -------------------------
-// Routes
+// Import Routes
 // -------------------------
 const contactRoute = require("./routes/contactRoutes");
 const donationRoute = require("./routes/donationRoutes");
@@ -16,20 +15,20 @@ const joinUsRoute = require("./routes/joinUsRoutes");
 const jobNewsRoute = require("./routes/jobNewsRoutes");
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // -------------------------
-// Hardcoded Admin Credentials
+// Admin Credentials (Simple Auth)
 // -------------------------
-const ADMIN_PASSWORD = "admin123";  // fixed password
-const JWT_SECRET = "mysecret123";   // JWT secret
+const ADMIN_PASSWORD = "admin123";
+const JWT_SECRET = "mysecret123";
 
 // -------------------------
 // CORS Configuration
 // -------------------------
 const allowedOrigins = [
-  "http://localhost:5173",   // local frontend
-  "https://zamsof.org",      // production frontend
+  "http://localhost:5173", // Local frontend
+  "https://zamsof.org",    // Production frontend
 ];
 
 app.use(cors({
@@ -37,7 +36,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("❌ CORS blocked request from:", origin);
+      console.warn("❌ CORS blocked request from:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -82,14 +81,14 @@ app.post("/api/verify-password", (req, res) => {
 // -------------------------
 // Root Route
 // -------------------------
-app.get("/", (req, res) => res.send("Backend is working!"));
+app.get("/", (req, res) => res.send("✅ Backend is working perfectly!"));
 
 // -------------------------
-// Connect to MongoDB & Start Server
+// Connect MongoDB & Start Server
 // -------------------------
 connectDB()
   .then(() => {
-    console.log("✅ MongoDB connected");
+    console.log("✅ MongoDB connected successfully");
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
-  .catch((err) => console.error("❌ MongoDB connection failed:", err));
+  .catch((err) => console.error("❌ MongoDB connection failed:", err.message));
