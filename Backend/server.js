@@ -40,9 +40,8 @@ console.log("✅ Cloudinary configured:", cloudinary.config().cloud_name);
 const allowedOrigins = [
   "http://localhost:5173",
   "https://zamsof.org",
-  "https://www.zamsof.org"
+  "https://www.zamsof.org",
 ];
-
 
 app.use(
   cors({
