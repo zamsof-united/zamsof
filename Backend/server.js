@@ -28,9 +28,9 @@ const JWT_SECRET = "mysecret123";
 // Cloudinary Configuration
 // -------------------------
 cloudinary.config({
-  cloud_name: "dk5yadswa",        // Replace with your Cloudinary cloud name
-  api_key: "351985154945531",     // Replace with your Cloudinary API key
-  api_secret: "Jqkw711hFhXWUSnGBaVRQqpRtqY", // Replace with your Cloudinary API secret
+  cloud_name: "dk5yadswa",
+  api_key: "351985154945531",
+  api_secret: "Jqkw711hFhXWUSnGBaVRQqpRtqY",
 });
 console.log("✅ Cloudinary configured:", cloudinary.config().cloud_name);
 
@@ -41,18 +41,21 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://zamsof.org",
 ];
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-    else callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+      else callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 
 // -------------------------
 // Middleware
 // -------------------------
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // -------------------------
@@ -70,11 +73,11 @@ app.use("/api/jobnews", jobNewsRoute);
 // -------------------------
 app.post("/api/verify-password", (req, res) => {
   const { password } = req.body;
-  if (!password) return res.status(400).json({ success: false, message: "Password required" });
+  if (!password)
+    return res.status(400).json({ success: false, message: "Password required" });
 
-  if (password !== ADMIN_PASSWORD) {
+  if (password !== ADMIN_PASSWORD)
     return res.json({ success: false, message: "Incorrect password" });
-  }
 
   const token = jwt.sign({ admin: true }, JWT_SECRET, { expiresIn: "1d" });
   res.json({ success: true, token });
@@ -83,21 +86,23 @@ app.post("/api/verify-password", (req, res) => {
 // -------------------------
 // Root Route
 // -------------------------
-app.get("/", (req, res) => res.json({ message: "✅ Backend is working perfectly!" }));
+app.get("/", (req, res) => {
+  res.json({ message: "✅ Backend is working perfectly!" });
+});
 
 // -------------------------
-// Catch-all for unknown API routes (always JSON)
+// Catch-all for unknown API routes
 // -------------------------
 app.use("/api/*", (req, res) => {
   res.status(404).json({ message: "API endpoint not found" });
 });
 
 // -------------------------
-// Global Error Handler (always JSON)
+// Global Error Handler
 // -------------------------
 app.use((err, req, res, next) => {
   console.error("Global Error:", err.message || err);
-  res.status(500).json({ message: "Internal server error", error: err.message || err });
+  res.status(500).json({ message: "Internal server error", error: err.message });
 });
 
 // -------------------------
