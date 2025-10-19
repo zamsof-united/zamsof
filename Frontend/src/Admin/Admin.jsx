@@ -19,8 +19,7 @@ const Admin = () => {
   const [formError, setFormError] = useState("");
   const [endpoint, setEndpoint] = useState("jobnews");
   const [activeLink, setActiveLink] = useState("jobnews");
-
-  const [editingItem, setEditingItem] = useState(null); // ✨ ADDED for edit mode
+  const [editingItem, setEditingItem] = useState(null);
 
   const menuItems = [
     { name: "Job & News", path: "jobnews" },
@@ -42,7 +41,7 @@ const Admin = () => {
     qualifications: "",
     responsibilities: "",
     link: "",
-    images: [],
+    images: [], // Can be File objects or existing URLs
   });
 
   const capitalizeWords = (str) =>
@@ -51,6 +50,7 @@ const Admin = () => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
 
+  // Load token from localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
@@ -59,8 +59,10 @@ const Admin = () => {
     }
   }, []);
 
+  // Fetch data when authenticated and endpoint changes
   useEffect(() => {
     if (!isAuthenticated) return;
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -78,9 +80,11 @@ const Admin = () => {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [endpoint, isAuthenticated, token]);
 
+  // Handle admin login
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -102,12 +106,14 @@ const Admin = () => {
     }
   };
 
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     setToken("");
     setIsAuthenticated(false);
   };
 
+  // Delete item
   const handleDelete = async (id) => {
     try {
       const res = await fetch(`${API_BASE}/${endpoint}/${id}`, {
@@ -118,41 +124,47 @@ const Admin = () => {
       setData(data.filter((item) => item._id !== id));
     } catch (err) {
       console.error(err);
-      alert("Failed to delete item. Make sure backend is running and reachable.");
+      alert(
+        "Failed to delete item. Make sure backend is running and reachable."
+      );
     }
   };
 
+  // Add / Edit Job/News
   const handleSubmitJobNews = async (e) => {
     e.preventDefault();
     setFormError("");
 
     try {
       const form = new FormData();
+
       Object.keys(formData).forEach((key) => {
         if (key === "images") {
-          formData.images.forEach((img) => form.append("images", img));
+          // Only append new File objects, skip existing URLs
+          formData.images.forEach((img) => {
+            if (img instanceof File) form.append("images", img);
+          });
         } else {
-          form.append(key, formData[key]);
+          form.append(key, formData[key] || "");
         }
       });
 
       const url = editingItem
-        ? `${API_BASE}/jobnews/${editingItem._id}` // ✨ if editing, PUT
+        ? `${API_BASE}/jobnews/${editingItem._id}`
         : `${API_BASE}/jobnews`;
-
-      const method = editingItem ? "PUT" : "POST"; // ✨ update or create
+      const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }, // DO NOT set Content-Type
         body: form,
       });
 
-      if (!res.ok) throw new Error(await res.text());
       const result = await res.json();
 
+      if (!res.ok) throw new Error(result.message || "Unknown server error");
+
       if (editingItem) {
-        // ✨ Replace old item in list
         setData(data.map((item) => (item._id === result._id ? result : item)));
         setEditingItem(null);
         alert("Successfully updated!");
@@ -161,7 +173,7 @@ const Admin = () => {
         alert("Successfully added!");
       }
 
-      // reset form
+      // Reset form
       setFormData({
         type: "job",
         title: "",
@@ -176,13 +188,13 @@ const Admin = () => {
         images: [],
       });
     } catch (err) {
-      console.error(err);
+      console.error("Submit Job/News Error:", err);
       setFormError(err.message);
     }
   };
 
+  // Edit existing item
   const handleEdit = (item) => {
-    // ✨ Fill form with existing item data
     setFormData({
       type: item.type,
       title: item.title || "",
@@ -194,7 +206,7 @@ const Admin = () => {
       qualifications: item.qualifications || "",
       responsibilities: item.responsibilities || "",
       link: item.link || "",
-      images: [],
+      images: item.images || [], // include existing URLs
     });
     setEditingItem(item);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -236,7 +248,7 @@ const Admin = () => {
                   onClick={() => {
                     setEndpoint(item.path);
                     setActiveLink(item.path);
-                    setEditingItem(null); // reset edit mode when switching
+                    setEditingItem(null);
                   }}
                 >
                   {item.name}
@@ -273,7 +285,6 @@ const Admin = () => {
                     required
                   />
 
-                  {/* JOB FORM */}
                   {formData.type === "job" && (
                     <>
                       <input
@@ -358,14 +369,16 @@ const Admin = () => {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            images: Array.from(e.target.files),
+                            images: [
+                              ...formData.images.filter((i) => !(i instanceof File)),
+                              ...Array.from(e.target.files),
+                            ],
                           })
                         }
                       />
                     </>
                   )}
 
-                  {/* NEWS FORM */}
                   {formData.type === "news" && (
                     <>
                       <ReactQuill
@@ -394,7 +407,10 @@ const Admin = () => {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            images: Array.from(e.target.files),
+                            images: [
+                              ...formData.images.filter((i) => !(i instanceof File)),
+                              ...Array.from(e.target.files),
+                            ],
                           })
                         }
                       />
@@ -446,10 +462,7 @@ const Admin = () => {
                     <p>Deadline: {item.deadline}</p>
                     <p>Link: {item.link}</p>
                     <div className="btn-group">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="edit-btn"
-                      >
+                      <button onClick={() => handleEdit(item)} className="edit-btn">
                         Edit
                       </button>
                       <button
