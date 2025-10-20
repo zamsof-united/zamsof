@@ -146,8 +146,7 @@ const JobAndNews = () => {
             <h3>Ubuntu in Action</h3>
             <p>
               Explore inspiring stories of collaboration and community empowerment
-              from across the globe. These 31 snapshots capture the dedication and
-              resilience of people taking action for sustainability and justice.
+              from across the globe.
             </p>
             <a
               href="https://the-global-forest-coalition.shorthandstories.com/ubuntu-in-action/index.html"
