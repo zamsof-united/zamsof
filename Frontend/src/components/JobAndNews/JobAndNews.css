@@ -1,295 +1,219 @@
-/* ===============================
-   JOB & NEWS SECTION
-=============================== */
+/* ===== General Section Styling ===== */
 .job-news-section {
-  font-family: 'Arial', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3rem;
-  padding: 6rem 1rem 4rem 1rem;
-  background: #f9f9f9;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 20px 40px; /* top padding avoids navbar overlap */
+  font-family: Arial, sans-serif;
   color: #333;
-  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
-/* Section header with refresh button */
+/* ===== Section Header ===== */
 .section-header {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
+  justify-content: center; /* center content horizontally */
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* allow wrapping on small screens */
+  gap: 15px; /* space between title and button */
+  margin-bottom: 30px;
+  text-align: center;
 }
 
 .section-header h2 {
   font-size: 2rem;
-  color: rgb(199, 86, 55);
+  margin: 0;
 }
 
 .refresh-btn {
-  padding: 0.5rem 1rem;
-  background-color: rgb(108,154,86);
+  background-color: #2c3e50;
   color: #fff;
-  border-radius: 6px;
   border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
 .refresh-btn:hover {
-  background-color: #005fa3;
-  transform: scale(1.05);
+  background-color: #1a252f;
 }
 
-/* Loading and error messages */
+/* ===== Loading / Error ===== */
 .loading-text,
 .error-text,
-.no-jobs,
-.no-news {
-  font-size: 1.2rem;
-  color: #555;
+.no-jobs {
   text-align: center;
-  animation: fadeIn 1s ease;
+  font-size: 1.2rem;
+  margin: 20px 0;
 }
 
-/* ===============================
-   JOB POSTINGS
-=============================== */
+/* ===== Jobs Section ===== */
 .jobs-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  width: 100%;
-  max-width: 900px;
-  align-items: center;
+  align-items: center; /* Center all job cards */
+  gap: 30px;
+  margin-bottom: 50px;
 }
 
 .job-card {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  padding: 2rem;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fadeIn 0.8s ease;
-}
-
-.job-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  max-width: 700px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 25px 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  text-align: center; /* Center text inside each job card */
 }
 
 .job-card h3 {
-  font-size: 1.6rem;
-  color: #1a202c;
-  margin-bottom: 0.5rem;
+  margin-top: 0;
+  font-size: 1.8rem;
+  color: #2c3e50;
 }
 
 .job-card p {
   font-size: 1rem;
-  color: #555;
+  margin: 8px 0;
 }
 
-.job-card div[dangerouslySetInnerHTML] {
-  font-size: 1rem;
-  color: #444;
-  line-height: 1.5;
-}
-
-/* Apply button */
 .apply-btn {
   display: inline-block;
-  padding: 0.7rem 1.5rem;
-  background-color: rgb(108,154,86);
+  margin-top: 15px;
+  padding: 10px 25px;
+  background-color: #d16b0c;
   color: #fff;
-  font-weight: bold;
   border-radius: 8px;
   text-decoration: none;
+  font-weight: bold;
   transition: all 0.3s ease;
-  margin-top: 1rem;
 }
 
 .apply-btn:hover {
-  background-color: #005fa3;
-  transform: scale(1.05);
+  background-color: #1e8449;
 }
 
-/* Job images container */
 .images-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
+  justify-content: center; /* Center images inside job card */
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .images-container img {
-  width: 100%;
-  max-width: 120px;
-  height: auto;
-  border-radius: 8px;
+  width: 100px;
+  height: 80px;
   object-fit: cover;
-  transition: transform 0.3s ease, filter 0.3s ease;
+  border-radius: 8px;
 }
 
-.images-container img:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
-}
-
-/* ===============================
-   NEWS SECTION
-=============================== */
+/* ===== News Section ===== */
 .news-section {
-  width: 100%;
-  max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  align-items: center;
+  margin-top: 50px;
 }
 
 .news-section h2 {
-  font-size: 2rem;
   text-align: center;
-  margin-bottom: 1rem;
-  color: rgb(199, 86, 55);
+  font-size: 2rem;
+  margin-bottom: 30px;
 }
 
-/* News grid */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  justify-content: center;
-}
-
-/* News card */
-.news-card {
-  background: white;
+.single-news-card {
+  background-color: #f5f5f5;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  padding: 1.5rem;
+  padding: 25px 20px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
   align-items: center;
+  gap: 20px;
+}
+
+.news-images-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 images per row on desktop */
+  gap: 10px;
+  width: 100%;
+}
+
+.news-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.news-content {
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fadeIn 1s ease;
 }
 
-.news-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(161,113,100,0.3);
-}
-
-.news-card h4 {
-  font-size: 1.3rem;
-  margin-bottom: 0.5rem;
+.news-content h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #2c3e50;
 }
 
 .news-content p {
-  color: #444;
+  font-size: 1rem;
+  margin: 10px 0 15px;
+  line-height: 1.5;
 }
 
-/* News images grid */
-.news-images {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.news-images img {
-  width: 100%;
-  max-width: 120px;
+.read-more-btn {
+  display: inline-block;
+  padding: 10px 25px;
+  background-color: #d16b0c;
+  color: #fff;
   border-radius: 8px;
-  object-fit: cover;
-  transition: transform 0.3s ease, filter 0.3s ease;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
-.news-images img:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
+.read-more-btn:hover {
+  background-color: #1c5980;
 }
 
-/* ===============================
-   ANIMATIONS
-=============================== */
-@keyframes fadeIn {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 1200px) {
+  .news-images-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-/* ===============================
-   RESPONSIVE MEDIA QUERIES
-=============================== */
 @media (max-width: 992px) {
-  .job-card, .news-card {
-    padding: 1.5rem;
-  }
-
-  .job-card h3 {
-    font-size: 1.4rem;
-  }
-
-  .apply-btn {
-    padding: 0.6rem 1.3rem;
-    font-size: 0.95rem;
-  }
-
-  .news-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-
-  .news-images {
+  .news-images-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+}
 
-  .images-container img, .news-images img {
-    max-width: 100px;
+@media (max-width: 768px) {
+  .job-news-section {
+    padding-top: 140px; /* more top padding for mobile if navbar is taller */
+  }
+  .news-images-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .job-card {
+    padding: 20px 15px;
   }
 }
 
-@media (max-width: 600px) {
-  .job-news-section {
-    padding: 2rem 1rem;
+@media (max-width: 480px) {
+  .news-images-grid {
+    grid-template-columns: 1fr; /* 1 image per row on very small devices */
   }
 
-  .job-card, .news-card {
-    padding: 1rem;
+  .section-header {
+    flex-direction: column;
+    gap: 15px;
   }
 
-  .job-card h3 {
-    font-size: 1.2rem;
+  .refresh-btn {
+    width: 100%; /* full width button on mobile */
   }
 
-  .apply-btn {
-    padding: 0.5rem 1.2rem;
-    font-size: 0.9rem;
-  }
-
-  .news-section h2 {
-    font-size: 1.7rem;
-  }
-
-  .news-card h4 {
-    font-size: 1.1rem;
-  }
-
-  .news-images {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .images-container img, .news-images img {
-    max-width: 80px;
+  .section-header h2 {
+    font-size: 1.5rem;
   }
 }

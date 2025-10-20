@@ -22,7 +22,7 @@ const Admin = () => {
   const [editingItem, setEditingItem] = useState(null);
 
   const menuItems = [
-    { name: "Job & News", path: "jobnews" },
+    { name: "Job Management", path: "jobnews" },
     { name: "Donation", path: "donation" },
     { name: "Volunteer", path: "volunteer" },
     { name: "Partner", path: "partner" },
@@ -41,7 +41,7 @@ const Admin = () => {
     qualifications: "",
     responsibilities: "",
     link: "",
-    images: [], // Can be File objects or existing URLs
+    images: [],
   });
 
   const capitalizeWords = (str) =>
@@ -50,7 +50,7 @@ const Admin = () => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
 
-  // Load token from localStorage
+  // Load saved token
   useEffect(() => {
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
@@ -59,7 +59,7 @@ const Admin = () => {
     }
   }, []);
 
-  // Fetch data when authenticated and endpoint changes
+  // Fetch data when authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -84,7 +84,7 @@ const Admin = () => {
     fetchData();
   }, [endpoint, isAuthenticated, token]);
 
-  // Handle admin login
+  // Admin login
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -99,7 +99,9 @@ const Admin = () => {
         localStorage.setItem("adminToken", result.token);
         setIsAuthenticated(true);
         setPasswordError("");
-      } else setPasswordError(result.message || "Incorrect password");
+      } else {
+        setPasswordError(result.message || "Incorrect password");
+      }
     } catch (err) {
       console.error(err);
       setPasswordError("Could not connect to backend");
@@ -124,14 +126,12 @@ const Admin = () => {
       setData(data.filter((item) => item._id !== id));
     } catch (err) {
       console.error(err);
-      alert(
-        "Failed to delete item. Make sure backend is running and reachable."
-      );
+      alert("Failed to delete item. Make sure backend is running and reachable.");
     }
   };
 
-  // Add / Edit Job/News
-  const handleSubmitJobNews = async (e) => {
+  // Add / Edit Job
+  const handleSubmitJob = async (e) => {
     e.preventDefault();
     setFormError("");
 
@@ -140,7 +140,6 @@ const Admin = () => {
 
       Object.keys(formData).forEach((key) => {
         if (key === "images") {
-          // Only append new File objects, skip existing URLs
           formData.images.forEach((img) => {
             if (img instanceof File) form.append("images", img);
           });
@@ -156,21 +155,20 @@ const Admin = () => {
 
       const res = await fetch(url, {
         method,
-        headers: { Authorization: `Bearer ${token}` }, // DO NOT set Content-Type
+        headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
 
       const result = await res.json();
-
       if (!res.ok) throw new Error(result.message || "Unknown server error");
 
       if (editingItem) {
         setData(data.map((item) => (item._id === result._id ? result : item)));
         setEditingItem(null);
-        alert("Successfully updated!");
+        alert("Job updated successfully!");
       } else {
         setData([result, ...data]);
-        alert("Successfully added!");
+        alert("Job added successfully!");
       }
 
       // Reset form
@@ -188,12 +186,12 @@ const Admin = () => {
         images: [],
       });
     } catch (err) {
-      console.error("Submit Job/News Error:", err);
+      console.error("Submit Job Error:", err);
       setFormError(err.message);
     }
   };
 
-  // Edit existing item
+  // Edit existing job
   const handleEdit = (item) => {
     setFormData({
       type: item.type,
@@ -206,7 +204,7 @@ const Admin = () => {
       qualifications: item.qualifications || "",
       responsibilities: item.responsibilities || "",
       link: item.link || "",
-      images: item.images || [], // include existing URLs
+      images: item.images || [],
     });
     setEditingItem(item);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -262,19 +260,9 @@ const Admin = () => {
 
             {endpoint === "jobnews" && (
               <div className="form-container">
-                <h3>{editingItem ? "Edit Job/News" : "Add Job or News"}</h3>
+                <h3>{editingItem ? "Edit Job" : "Add Job"}</h3>
 
-                <form onSubmit={handleSubmitJobNews} className="add-form">
-                  <select
-                    value={formData.type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, type: e.target.value })
-                    }
-                  >
-                    <option value="job">Job</option>
-                    <option value="news">News</option>
-                  </select>
-
+                <form onSubmit={handleSubmitJob} className="add-form">
                   <input
                     type="text"
                     placeholder="Title"
@@ -284,142 +272,94 @@ const Admin = () => {
                     }
                     required
                   />
+                  <input
+                    type="text"
+                    placeholder="Location"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Deadline"
+                    value={formData.deadline}
+                    onChange={(e) =>
+                      setFormData({ ...formData, deadline: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Start Date"
+                    value={formData.startDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startDate: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Contract Terms (optional)"
+                    value={formData.contract}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contract: e.target.value })
+                    }
+                  />
 
-                  {formData.type === "job" && (
-                    <>
-                      <input
-                        type="text"
-                        placeholder="Location"
-                        value={formData.location}
-                        onChange={(e) =>
-                          setFormData({ ...formData, location: e.target.value })
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Deadline"
-                        value={formData.deadline}
-                        onChange={(e) =>
-                          setFormData({ ...formData, deadline: e.target.value })
-                        }
-                      />
-                      <input
-                        type="text"
-                        placeholder="Start Date"
-                        value={formData.startDate}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            startDate: e.target.value,
-                          })
-                        }
-                      />
-                      <input
-                        type="text"
-                        placeholder="Contract Terms (optional)"
-                        value={formData.contract}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            contract: e.target.value,
-                          })
-                        }
-                      />
-
-                      <ReactQuill
-                        theme="snow"
-                        value={formData.description}
-                        onChange={(value) =>
-                          setFormData({ ...formData, description: value })
-                        }
-                        placeholder="Full Job Description"
-                      />
-                      <ReactQuill
-                        theme="snow"
-                        value={formData.qualifications}
-                        onChange={(value) =>
-                          setFormData({ ...formData, qualifications: value })
-                        }
-                        placeholder="Required Qualifications"
-                      />
-                      <ReactQuill
-                        theme="snow"
-                        value={formData.responsibilities}
-                        onChange={(value) =>
-                          setFormData({ ...formData, responsibilities: value })
-                        }
-                        placeholder="Key Responsibilities"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Application / Email Link"
-                        value={formData.link}
-                        onChange={(e) =>
-                          setFormData({ ...formData, link: e.target.value })
-                        }
-                      />
-                      <label style={{ fontWeight: "bold", marginTop: "8px" }}>
-                        Upload Job Images (optional)
-                      </label>
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            images: [
-                              ...formData.images.filter((i) => !(i instanceof File)),
-                              ...Array.from(e.target.files),
-                            ],
-                          })
-                        }
-                      />
-                    </>
-                  )}
-
-                  {formData.type === "news" && (
-                    <>
-                      <ReactQuill
-                        theme="snow"
-                        value={formData.description}
-                        onChange={(value) =>
-                          setFormData({ ...formData, description: value })
-                        }
-                        placeholder="News Content"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Read More / External Link"
-                        value={formData.link}
-                        onChange={(e) =>
-                          setFormData({ ...formData, link: e.target.value })
-                        }
-                      />
-                      <label style={{ fontWeight: "bold", marginTop: "8px" }}>
-                        Upload Multiple Images (for News)
-                      </label>
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            images: [
-                              ...formData.images.filter((i) => !(i instanceof File)),
-                              ...Array.from(e.target.files),
-                            ],
-                          })
-                        }
-                      />
-                    </>
-                  )}
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.description}
+                    onChange={(value) =>
+                      setFormData({ ...formData, description: value })
+                    }
+                    placeholder="Full Job Description"
+                  />
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.qualifications}
+                    onChange={(value) =>
+                      setFormData({ ...formData, qualifications: value })
+                    }
+                    placeholder="Required Qualifications"
+                  />
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.responsibilities}
+                    onChange={(value) =>
+                      setFormData({ ...formData, responsibilities: value })
+                    }
+                    placeholder="Key Responsibilities"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Application / Email Link"
+                    value={formData.link}
+                    onChange={(e) =>
+                      setFormData({ ...formData, link: e.target.value })
+                    }
+                  />
+                  <label style={{ fontWeight: "bold", marginTop: "8px" }}>
+                    Upload Job Images (optional)
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        images: [
+                          ...formData.images.filter((i) => !(i instanceof File)),
+                          ...Array.from(e.target.files),
+                        ],
+                      })
+                    }
+                  />
 
                   <button type="submit" className="submit-btn">
-                    {editingItem ? "Update" : "Add"} {formData.type}
+                    {editingItem ? "Update" : "Add"} Job
                   </button>
+
                   {editingItem && (
                     <button
                       type="button"
@@ -457,7 +397,6 @@ const Admin = () => {
                 {data.map((item) => (
                   <div key={item._id} className="data-card">
                     <h4>{item.title}</h4>
-                    <p>Type: {item.type}</p>
                     <p>Location: {item.location}</p>
                     <p>Deadline: {item.deadline}</p>
                     <p>Link: {item.link}</p>
