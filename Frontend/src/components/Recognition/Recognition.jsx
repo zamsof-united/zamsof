@@ -1,7 +1,7 @@
 
 import SwiperCore from 'swiper/core'; // Import Swiper core
 import 'swiper/css'; // Import Swiper core styles
- // Import Autoplay module styles
+// Import Autoplay module styles
 import { Autoplay } from 'swiper/modules'; // Import Autoplay module
 import { Swiper, SwiperSlide } from 'swiper/react';
 import img1 from '../../assets/img1.jpg';
@@ -11,7 +11,8 @@ import img4 from '../../assets/img4.png';
 import img5 from '../../assets/img5.png';
 import img6 from '../../assets/img6.jpeg';
 import img8 from '../../assets/img8.jpg';
-import img9 from '../../assets/img8.jpg';
+import imgNew from '../../assets/new.jpeg';
+
 import './Recognition.css'; // Import the provided CSS file
 
 // Configure Swiper to use modules
@@ -29,8 +30,8 @@ const Recognition = () => {
   return (
     <>
       <div className="section-title">
-        <h1 className="section-heading" style={{marginBottom:"6rem",marginTop:"4rem"}}>We Are Recognised & Trusted By</h1>
-        
+        <h1 className="section-heading" style={{ marginBottom: "6rem", marginTop: "4rem" }}>We Are Recognised & Trusted By</h1>
+
       </div>
       <div className="partnersRec">
         <Swiper
@@ -45,11 +46,11 @@ const Recognition = () => {
           }}
           slideToClickedSlide={true}
           loop={true}
-          loopFillGroupWithBlank= {true}
+          loopFillGroupWithBlank={true}
           //TODO Add Action in Zambia, PCFS, Eco Fish, and other key partners.
           className="swipeflex"
         >
-          {[img1, img2, img3, img4, img5, img6, img8].map((image) => createSlide(image))}
+          {[img1, img2, img3, img4, img5, img6, img8, imgNew].map((image) => createSlide(image))}
         </Swiper>
       </div>
     </>
